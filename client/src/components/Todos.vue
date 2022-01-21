@@ -42,8 +42,9 @@ export default {
   methods: {
 		async getTodos() {
 			this.todoLists = await TodosService.getTodos()
+      console.log("get", this.todoLists)
 		},
-    newTodo(newTodo) {
+    async newTodo(newTodo) {
 			// check for duplicate todo list name
 			let dupe = false
 			this.todoLists.forEach((item) => {
@@ -53,13 +54,14 @@ export default {
 				}
 			})
 			if (!dupe) {
-				this.todoLists = [...this.todoLists, newTodo]
+        TodosService.addTodo(newTodo)
+        this.getTodos()
 			}
 			this.newTodoList = false
     },
-		deleteTodoList(todoId) {
-      TodosService.deleteTodo(todoId)
-      this.$forceUpdate()
+		async deleteTodoList(todoId) {
+      await TodosService.deleteTodo(todoId)
+      this.getTodos()
     }
   }
 }

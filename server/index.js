@@ -132,6 +132,14 @@ app.get('/todoLists/:id', (req, res) => {
   res.send(todoList);
 });
 
+app.post('/addTodoList', (req, res) => {
+  const newTodo = req.body.newTodo;
+  console.log("got here first", newTodo)
+  todoLists.push(newTodo);
+  console.log("got here", todoLists)
+  res.send();
+});
+
 app.delete('/todoLists/:id', (req, res) => {
   const id = Number(req.params.id);
   const index = todoLists.findIndex(list => list.id === id);
