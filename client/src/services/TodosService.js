@@ -12,15 +12,35 @@ export default {
   },
 
   async addTodo(newTodo) {
-    console.log("newTodo", newTodo)
     let res = await axios.post("http://localhost:3000/addTodoList", {
       newTodo
     });
     return res.data;
   },
 
-  async deleteTodo(todoId) {
-    let res = await axios.delete("http://localhost:3000/todoLists/" + todoId);
+  async addNewTask(newTask, listId) {
+    let res = await axios.post("http://localhost:3000/addNewTask", {
+      newTask,
+      listId
+    });
+    return res.data;
+  },
+
+  async updateTask(updatedTask, listId) {
+    let res = await axios.put("http://localhost:3000/updateTask", {
+      updatedTask,
+      listId
+    });
+    return res.data;
+  },
+
+  async deleteTodoList(listId) {
+    let res = await axios.delete("http://localhost:3000/todoLists/" + listId);
+    return res.data;
+  },
+
+  async deleteTask(taskId, listId) {
+    let res = await axios.delete("http://localhost:3000/todoLists/" + listId + "/" + taskId);
     return res.data;
   }
 }

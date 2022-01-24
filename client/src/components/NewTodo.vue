@@ -10,9 +10,10 @@
       v-if="addTask"
       :newTodoList="true"
       @createTodoList="newTodoList"
+      @cancel="cancelList"
     />
     <div>
-      <button @click="cancelList">Cancel</button>
+      <button v-if="!addTask" @click="cancelList">Cancel</button>
     </div>
   </div>
 </template>
@@ -39,7 +40,7 @@ export default {
         name: this.name,
         id: Math.ceil(Math.random()*1000000),
         complete: false,
-        todos: [newTask]
+        tasks: [newTask]
       }
       this.$emit('newTodo', newTodoList)
       this.name = ''
@@ -53,8 +54,4 @@ export default {
 </script>
 
 <style>
-.date {
-  display: flex;
-  justify-content: center;
-}
 </style>

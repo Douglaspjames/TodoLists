@@ -23,7 +23,7 @@
       </select>
     </div>
     <button @click="newTask" :disabled="disableSave">Save</button><br>
-    <button v-if="update" @click="cancel">Cancel</button><br>
+    <button @click="cancel">Cancel</button><br>
   </div>
 </template>
 
@@ -76,7 +76,8 @@ export default {
           description: this.description,
           dueDate: new Date(this.dueDate).toLocaleDateString('en-US'),
           priority: this.priority,
-          complete: false
+          complete: false,
+          edit: false
         }
         this.$emit('updateTask', updatedTask)
       } else {
@@ -85,7 +86,8 @@ export default {
           description: this.description,
           dueDate: new Date(this.dueDate).toLocaleDateString('en-US'),
           priority: this.priority,
-          complete: false
+          complete: false,
+          edit: false
         }
         if (this.newTodoList) {
           this.$emit('createTodoList', newTask)

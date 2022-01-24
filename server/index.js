@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const { findLastKey } = require('lodash');
 const app = express();
 
 app.use(bodyParser.json());
@@ -17,7 +18,7 @@ let todoLists = [
     name: 'Groceries',
     id: 1,
     complete: false,
-    todos: [
+    tasks: [
       {
         id: 10,
         description: 'apples',
@@ -38,7 +39,7 @@ let todoLists = [
     name: 'Packing',
     id: 2,
     complete: false,
-    todos: [
+    tasks: [
       {
         id: 12,
         description: 'boxes',
@@ -77,7 +78,7 @@ let todoLists = [
     name: 'Reading',
     id: 3,
     complete: false,
-    todos: [
+    tasks: [
       {
         id: 16,
         description: 'Leaves of Grass',
@@ -134,9 +135,25 @@ app.get('/todoLists/:id', (req, res) => {
 
 app.post('/addTodoList', (req, res) => {
   const newTodo = req.body.newTodo;
-  console.log("got here first", newTodo)
   todoLists.push(newTodo);
-  console.log("got here", todoLists)
+  res.send();
+});
+
+app.post('/addNewTask', (req, res) => {
+  const newTask = req.body.newTask;
+  const id = Number(req.body.listId);
+  let list = todoLists.find(list => list.id === id);
+  list.tasks.push(newTask);
+  res.send();
+});
+
+app.put('/updateTask', (req, res) => {
+  const updatedTask = req.body.updatedTask;
+  const id = Number(req.body.listId);
+  let list = todoLists.find(list => list.id === id);
+  const index = list.tasks.findIndex(task => task.id === updatedTask.id);
+  list.tasks.splice(index, 1);
+  list.tasks.push(updatedTask);
   res.send();
 });
 
@@ -147,9 +164,15 @@ app.delete('/todoLists/:id', (req, res) => {
   res.send();
 });
 
-app.get('/todos', (req, res) => {
-  return res.status(200).send(todos);
+app.delete('/todoLists/:id/:taskId', (req, res) => {
+  const id = Number(req.params.id);
+  const taskId = Number(req.params.taskId);
+  let list = todoLists.find(list => list.id === id);
+  const index = list.tasks.findIndex(task => task.id === taskId);
+  list.tasks.splice(index, 1);
+  res.send();
 });
+
 
 app.listen(PORT, () =>
   console.log(`Example app listening on port ${PORT}!`),

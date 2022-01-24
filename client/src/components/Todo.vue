@@ -1,54 +1,97 @@
 <template>
   <div class="item">
-    <div v-if="!details">
-      <h2 :class="{ 'complete': tasks.complete }" @click="details=true">{{ tasks.name }}</h2>
-      <p>{{ completedTasks }} / {{ allTasks }}</p>
+    <div>
+      <h2>{{ todo.name }}</h2>
+      <div class="date">
+        <ul>
+          <li v-for="task in todo.tasks" :key="task.description">
+            <div>
+              <p :class="{ 'complete': task.complete }">{{ task.description }} {{ task.dueDate }} Priority: {{ task.priority }}</p>
+              <div v-if="!task.edit">
+                <button v-if="!task.complete" @click="markTaskComplete(task)">Complete</button>
+                <button v-if="!task.complete" @click="task.edit=true">Update</button>
+                <button @click="deleteTask(task.id)">Delete</button>
+              </div>
+              <AddNewTask
+                v-if="task.edit"
+                :update="true"
+                :taskId="task.id"
+                @updateTask="updateTask"
+                @cancel="cancel(task)"
+              />
+            </div>
+          </li>
+        </ul>
+      </div><br>
+      <button @click="addTask=true">Add Task</button>
     </div>
-
-    <TaskList
-      v-if="details"
-      :tasks="tasks"
-      @deleteTask="deleteTask"
+    <AddNewTask
+      v-if="addTask"
+      @newTask="addNewTask"
+      @cancel="cancel"
     /><br>
-    <button v-if="details" @click="details=false">Close</button>
-    <button v-if="!details" @click="$emit('delete', tasks.id)">Delete</button>
+    <router-link :to="'/'"><button>BACK</button></router-link>
   </div>
 </template>
 
 <script>
-import TaskList from '@/components/TaskList'
+import TodosService from '@/services/TodosService.js';
+import AddNewTask from '@/components/AddNewTask'
 
 export default {
   name: 'Todo',
   components: {
-    TaskList
+    AddNewTask
   },
   data() {
     return {
-			details: false,
-      allTasks: null,
-      completedTasks: null
+      addTask: false,
+      todo: {},
+      listId: ''
     }
   },
-  props: {
-    tasks: {
-      required: true,
-      type: Object
-    },
-  },
   mounted() {
-    this.getCompletedTaskCount()
+    this.listId = this.$route.params.id
+    this.getTodo(this.listId)
   },
   methods: {
-    getCompletedTaskCount () {
-      this.allTasks = this.tasks.todos.length
-      this.completedTasks = this.tasks.todos.filter(todo => todo.complete == true).length
-      if (this.allTasks == this.completedTasks) {
-        this.tasks.complete = true
-      }
+    async getTodo (todoId) {
+      this.todo = await TodosService.getTodo(todoId)
     },
-    deleteTask (taskId) {
-      this.tasks.todos = this.tasks.todos.filter(task => task.id !== taskId)
+    async deleteTask (taskId) {
+      await TodosService.deleteTask(taskId, this.listId)
+      this.getTodo(this.listId)
+    },
+    async addNewTask (newTask) {
+      // check for duplicate task name
+      let dupe = false
+			this.todo.tasks.forEach((item) => {
+				if (item.description.toLowerCase() == newTask.description.toLowerCase()) {
+					alert("Task name already exists");
+          dupe = true
+				}
+			})
+      if (!dupe) {
+        await TodosService.addNewTask(newTask, this.listId)
+        this.getTodo(this.listId)
+      }
+      this.addTask = false
+    },
+    async markTaskComplete (task) {
+      task.complete = true
+      this.updateTask(task)
+    },
+    cancel (task) {
+      if (task) {
+        task.edit = false
+      } else {
+        this.addTask = false
+      }
+
+    },
+    async updateTask (updatedTask) {
+      await TodosService.updateTask(updatedTask, this.listId)
+      this.getTodo(this.listId)
     }
   }
 }
@@ -58,7 +101,11 @@ export default {
   .complete {
     text-decoration: line-through
   }
-  .item:hover {
-    cursor: pointer
+  .date {
+    display: flex;
+    justify-content: center;
   }
+  ul {
+    list-style-type: none;
+	}
 </style>

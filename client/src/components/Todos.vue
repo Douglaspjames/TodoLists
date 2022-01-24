@@ -2,11 +2,10 @@
   <div align="center">
     <h1>Todo lists</h1>
     <ul>
-      <li v-for="tasks in todoLists" :key="tasks.name">
-        <Todo
-					:tasks="tasks"
-					@delete="deleteTodoList"
-				/>
+      <li v-for="todo in todoLists" :key="todo.name">
+        <router-link :to="'/todo/'+ todo.id"><h1 :class="{ 'complete': todo.complete }">{{ todo.name }}</h1></router-link>
+        <p>{{ todo.completedTasks }} / {{ todo.tasks.length }}</p>
+        <button @click="deleteTodoList(todo.id)">Delete</button>
       </li>
     </ul>
     <NewTodo
@@ -21,13 +20,11 @@
 
 <script>
 import TodosService from '@/services/TodosService.js';
-import Todo from '@/components/Todo'
 import NewTodo from '@/components/NewTodo'
 
 export default {
   name: 'Todos',
   components: {
-    Todo,
 		NewTodo
   },
   data() {
@@ -42,25 +39,30 @@ export default {
   methods: {
 		async getTodos() {
 			this.todoLists = await TodosService.getTodos()
-      console.log("get", this.todoLists)
+      this.todoLists.forEach((item) => {
+        this.$set(item,'completedTasks', item.tasks.filter(list => list.complete == true).length)
+        if (item.completedTasks == item.tasks.length) {
+          item.complete = true
+        }
+      })
 		},
     async newTodo(newTodo) {
 			// check for duplicate todo list name
-			let dupe = false
+      let dupe = false
 			this.todoLists.forEach((item) => {
 				if (item.name.toLowerCase() == newTodo.name.toLowerCase()) {
 					alert("Todo list name already exists");
-					dupe = true
+          dupe = true
 				}
 			})
-			if (!dupe) {
-        TodosService.addTodo(newTodo)
+      if (!dupe) {
+        await TodosService.addTodo(newTodo)
         this.getTodos()
-			}
+      }
 			this.newTodoList = false
     },
-		async deleteTodoList(todoId) {
-      await TodosService.deleteTodo(todoId)
+		async deleteTodoList(listId) {
+      await TodosService.deleteTodoList(listId)
       this.getTodos()
     }
   }
@@ -71,4 +73,7 @@ export default {
 	ul {
     list-style-type: none;
 	}
+  .complete {
+    text-decoration: line-through
+  }
 </style>
